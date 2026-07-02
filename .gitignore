@@ -1,0 +1,23 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Runtime/local config
+*.pid
+*.seed
+*.tmp
+*.swp
+application-local.properties
+application-*.local.properties
