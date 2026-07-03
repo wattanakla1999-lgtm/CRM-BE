@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,7 +32,11 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(status.value(), "Validation failed", errors));
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class
+    })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception exception) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status)

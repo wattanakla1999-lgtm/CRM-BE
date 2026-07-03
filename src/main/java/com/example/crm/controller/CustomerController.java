@@ -1,11 +1,5 @@
 package com.example.crm.controller;
 
-import com.example.crm.dto.ApiResponse;
-import com.example.crm.dto.CustomerRequest;
-import com.example.crm.dto.CustomerResponse;
-import com.example.crm.dto.PageResponse;
-import com.example.crm.service.CustomerService;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.crm.dto.ApiResponse;
+import com.example.crm.dto.CustomerRequest;
+import com.example.crm.dto.CustomerResponse;
+import com.example.crm.dto.CustomerStatsResponse;
+import com.example.crm.dto.PageResponse;
+import com.example.crm.service.CustomerService;
+
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -34,18 +37,34 @@ public class CustomerController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> findAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<CustomerResponse> customers = customerService.findAll(pageable);
+        Pageable pageable = PageRequest.of(page == 0 ? 0 : page - 1, size, Sort.by(sortDirection, sortBy));
+        String searchTerm = keyword;
+        if (searchTerm == null || searchTerm.isBlank()) {
+            searchTerm = search;
+        }
+
+        Page<CustomerResponse> customers = customerService.findAll(pageable, searchTerm);
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 "Customers retrieved successfully",
                 PageResponse.from(customers)
+        ));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<CustomerStatsResponse>> getStats() {
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                "Customer stats retrieved successfully",
+                customerService.getStats()
         ));
     }
 
