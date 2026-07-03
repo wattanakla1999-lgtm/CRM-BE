@@ -3,6 +3,7 @@ package com.example.crm.service;
 import com.example.crm.dto.CustomerRequest;
 import com.example.crm.dto.CustomerResponse;
 import com.example.crm.entity.Customer;
+import com.example.crm.exception.CustomerNotFoundException;
 import com.example.crm.repository.CustomerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,11 +43,12 @@ public class CustomerService {
     }
 
     public void delete(Long id) {
-        customerRepository.deleteById(id);
+        Customer customer = findEntityById(id);
+        customerRepository.delete(customer);
     }
 
     private Customer findEntityById(Long id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + id));
+                .orElseThrow(() -> new CustomerNotFoundException(id));
     }
 }
