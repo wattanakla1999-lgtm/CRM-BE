@@ -15,6 +15,9 @@ Thumbs.db
 *.iml
 
 # Runtime/local config
+.env
+.env.*
+!.env.example
 *.pid
 *.seed
 *.tmp

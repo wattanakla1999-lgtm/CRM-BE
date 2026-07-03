@@ -1,4 +1,4 @@
-package com.example.crm.customer;
+package com.example.crm.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

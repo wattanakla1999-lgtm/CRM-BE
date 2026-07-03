@@ -1,4 +1,4 @@
-package com.example.crm.health;
+package com.example.crm.controller;
 
 import java.time.Instant;
 import java.util.Map;
