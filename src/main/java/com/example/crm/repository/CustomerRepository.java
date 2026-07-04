@@ -1,6 +1,7 @@
 package com.example.crm.repository;
 
 import java.time.Instant;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,20 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Page<Customer> findByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Customer> findByEmailContainingIgnoreCase(String email, Pageable pageable);
     Page<Customer> findByPhoneContainingIgnoreCase(String phone, Pageable pageable);
+    Page<Customer> findByPhoneStartingWith(String phonePrefix, Pageable pageable);
+    Page<Customer> findByStatusNameIgnoreCase(String statusName, Pageable pageable);
+    Page<Customer> findByCompanyNameIgnoreCase(String companyName, Pageable pageable);
+    Page<Customer> findByCompanyNameIgnoreCaseAndStatusNameIgnoreCase(
+            String companyName,
+            String statusName,
+            Pageable pageable
+    );
+    Page<Customer> findByCompanyNameIgnoreCaseOrStatusNameIgnoreCase(
+            String companyName,
+            String statusName,
+            Pageable pageable
+    );
+
     @Query("""
             SELECT c FROM Customer c
             WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
