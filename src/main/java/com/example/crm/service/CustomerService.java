@@ -35,18 +35,12 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public Page<CustomerResponse> findAll(Pageable pageable, String keyword) {
-        Page<Customer> customers;
-        if (keyword != null && !keyword.isBlank()) {
-            customers = customerRepository.search(keyword, pageable);
-        } else {
-            customers = customerRepository.findAll(pageable);
-        }
+        String searchTerm = keyword != null && !keyword.isBlank() ? keyword : null;
+        String searchPattern = searchTerm != null ? "%" + searchTerm.toLowerCase() + "%" : "";
+        boolean hasSearch = searchTerm != null;
 
-        Map<Long, List<String>> tagsByCustomerId = loadTagsByCustomerId(customers.getContent());
-        return customers.map(customer -> CustomerResponse.from(
-                customer,
-                tagsByCustomerId.getOrDefault(customer.getId(), List.of())
-        ));
+        return customerRepository.searchSummaries(hasSearch, searchPattern, pageable)
+                .map(CustomerResponse::from);
     }
 
     public CustomerStatsResponse getStats() {

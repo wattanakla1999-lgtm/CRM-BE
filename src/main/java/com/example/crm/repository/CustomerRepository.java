@@ -37,6 +37,109 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             """)
     Page<Customer> search(@Param("searchTerm") String searchTerm, Pageable pageable);
 
+    @Query(value = """
+            WITH matched_customers AS (
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = FALSE
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.name) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.email) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.phone) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                JOIN companies comp ON comp.id = c.company_id
+                WHERE :hasSearch = TRUE
+                  AND LOWER(comp.name) LIKE :searchPattern
+            )
+            SELECT
+                c.id AS id,
+                c.name AS name,
+                c.email AS email,
+                c.phone AS phone,
+                s.name AS statusName,
+                comp.name AS companyName,
+                COALESCE(STRING_AGG(DISTINCT t.name, ',' ORDER BY t.name), '') AS tags,
+                c.created_at AS createdAt
+            FROM matched_customers mc
+            JOIN customers c ON c.id = mc.id
+            LEFT JOIN statuses s ON s.id = c.status_id
+            LEFT JOIN companies comp ON comp.id = c.company_id
+            LEFT JOIN tags t ON t.customer_id = c.id
+            GROUP BY
+                c.id,
+                c.name,
+                c.email,
+                c.phone,
+                s.name,
+                comp.name,
+                c.created_at
+            """,
+            countQuery = """
+            WITH matched_customers AS (
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = FALSE
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.name) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.email) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                WHERE :hasSearch = TRUE
+                  AND LOWER(c.phone) LIKE :searchPattern
+
+                UNION
+
+                SELECT c.id
+                FROM customers c
+                JOIN companies comp ON comp.id = c.company_id
+                WHERE :hasSearch = TRUE
+                  AND LOWER(comp.name) LIKE :searchPattern
+            )
+            SELECT COUNT(*)
+            FROM matched_customers
+            """,
+            nativeQuery = true)
+    Page<CustomerSummaryProjection> searchSummaries(
+            @Param("hasSearch") boolean hasSearch,
+            @Param("searchPattern") String searchPattern,
+            Pageable pageable
+    );
+
     long countByCreatedAtGreaterThanEqual(Instant createdAt);
 
     @Query("""
